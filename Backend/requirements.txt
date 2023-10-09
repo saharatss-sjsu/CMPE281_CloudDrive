@@ -1,0 +1,8 @@
+# Django
+Django==3.2.9
+django-environ==0.11.2
+django-cors-headers==4.2.0
+djangorestframework==3.14.0
+
+# AWS
+boto3==1.28.62

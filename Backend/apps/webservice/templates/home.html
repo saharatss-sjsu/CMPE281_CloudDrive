@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Saharat CloudDrive</title>
+
+	<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+	<input type="file" id="myfile">
+	<div id="message"></div>
+</body>
+<script>
+
+const BASE_BACKEND_URL = 'http://localhost:8000';
+
+d3.select('#myfile').on('change',(event)=>{
+	onInputChange(event);
+})
+
+function directUploadStart({fileName, fileType}){
+	return fetch(`${BASE_BACKEND_URL}/api/files/upload/start/`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			file_name: fileName,
+			file_type: fileType
+		}),
+	});
+}
+
+function directUploadDo(data, file){
+	const formData = new FormData();
+
+	for (const key in data?.fields) {
+		formData.append(key, data.fields[key]);
+	}
+	formData.append('file', file);
+
+	formData.forEach((value,key)=>console.log(key,value))
+
+	return fetch(data.url, {
+		method: "POST",
+		headers: {
+			'Access-Control-Allow-Origin': '*',
+		},
+		body: formData,
+	});
+}
+
+function directUploadFinish(file_id){
+	return fetch(`${BASE_BACKEND_URL}/api/files/upload/finish/`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ file_id: file_id}),
+	});
+};
+
+const onInputChange = (event) => {
+	const file = event.target.files[0];
+	if (file) {
+		directUploadStart({
+			fileName: file.name,
+			fileType: file.type
+		})
+		.then((response) => response.json())
+		.then((data) => {
+			directUploadDo(data, file)
+				.then(() => {
+					directUploadFinish(data.id);
+				})
+				.then(() => {
+					d3.select('#message').text('File upload completed!');
+				})
+		})
+		.catch((error) => {
+			console.log(error);
+			d3.select('#message').text('File upload failed!');
+		});
+	}
+};
+
+
+</script>
+</html>
