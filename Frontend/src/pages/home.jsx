@@ -23,11 +23,9 @@ export default function PageHome({ session }) {
 	// }, [session.sessionID]);
 
 	useEffect(()=>{
-		return ()=>{
-			console.log('sessionID', session.sessionID);
-			if(session.sessionID == null){
-				navigate("/account/login");
-			}
+		console.log('sessionID', session.sessionID);
+		if(session.sessionID == null){
+			navigate("/account/login", {replace: true});
 		}
 	})
 

@@ -1,5 +1,5 @@
-import { Card, Button, Form } from 'react-bootstrap';
-import { useState, useEffect } from 'react';
+import { Card } from 'react-bootstrap';
+import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 
 import BACKEND_HOST from '../../index';
@@ -32,7 +32,7 @@ export default function PageUserLogout({ session }) {
 
 	useEffect(() => {
 		logout();
-	}, []);
+	});
 
 	// useEffect(() => {
 	// 	console.log('sessionID', session.sessionID);

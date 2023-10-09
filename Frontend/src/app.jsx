@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import { CookiesProvider, useCookies } from "react-cookie";
-import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 import PageError from './pages/page-error';
 import PageHome from './pages/home';
@@ -11,27 +10,25 @@ import PageUserLogout from './pages/user/PageUserLogout';
 
 
 export default function App() {
-	const [cookies, setCookie, removeCookie, updateCookies] = useCookies(["sessionid"]);
+	const [cookies, setCookie, removeCookie] = useCookies(["sessionid"]);
 	const [sessionID, setSessionID] = useState(null);
 	const session = {sessionID:sessionID, setSessionID:setSessionID, removeSessionID:()=>{ localStorage.removeItem("sessionid"); }};
 
 	useEffect(() => {
-		// const sessionID = cookies.sessionid;
-		// if(sessionID === undefined) navigate("/account/login");
 		return ()=>{
-			// const _sessionID = cookies.sessionid;
 			const _sessionID = localStorage.getItem("sessionid");
 			setSessionID(_sessionID);
-			console.log('load sessionID', _sessionID);
+			console.log('load sessionID', _sessionID, cookies.sessionid);
 		}
-	}, []);
+	});
 
 	useEffect(() => {
 		if(sessionID == null){ 
 			return;
 		}
-		if(sessionID == ""){ 
+		if(sessionID === ""){ 
 			localStorage.removeItem("sessionid");
+			removeCookie('sessionid')
 			setSessionID(null);
 			return;
 		}
