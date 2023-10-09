@@ -63,8 +63,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
 ROOT_URLCONF = 'CMPE281_CloudDrive.urls'
 
 TEMPLATES = [
@@ -140,6 +138,33 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Security
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+	"http://localhost:3000",
+]
+CORS_ALLOW_HEADERS = [
+	"Access-Control-Allow-Origin",
+	"Cookie",
+]
+
+# Auth
+
+LOGIN_URL = '/'
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60*60*24 # 24hr
+
+# Rest
+
+REST_FRAMEWORK = {
+	'DEFAULT_AUTHENTICATION_CLASSES': [
+		'rest_framework.authentication.BasicAuthentication',
+		'rest_framework.authentication.SessionAuthentication',
+	]
+}
 
 # AWS S3
 

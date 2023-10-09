@@ -21,10 +21,12 @@ router = routers.DefaultRouter()
 
 from apps.userservice import apis as userservice_apis
 router.register('users', userservice_apis.UserViewSet)
+# router.register('auth', userservice_apis.Auth.as_view(), basename='auth')
 
 urlpatterns = [
 	path('', include('apps.webservice.urls')),
 	path('api/', include(router.urls)),
+	path('api/auth/', include('apps.userservice.urls')),
 	path('api/files/', include('apps.fileservice.urls')),
 	path('admin/', admin.site.urls),
 ]
