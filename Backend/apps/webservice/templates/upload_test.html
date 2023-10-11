@@ -20,7 +20,7 @@ d3.select('#myfile').on('change',(event)=>{
 })
 
 function directUploadStart({fileName, fileType}){
-	return fetch(`${BASE_BACKEND_URL}/api/files/upload/start/`, {
+	return fetch(`${BASE_BACKEND_URL}/api/file/upload/start/`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -52,7 +52,7 @@ function directUploadDo(data, file){
 }
 
 function directUploadFinish(file_id){
-	return fetch(`${BASE_BACKEND_URL}/api/files/upload/finish/`, {
+	return fetch(`${BASE_BACKEND_URL}/api/file/upload/finish/`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

@@ -16,17 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from rest_framework import routers, serializers, viewsets
-router = routers.DefaultRouter()
-
-from apps.userservice import apis as userservice_apis
-router.register('users', userservice_apis.UserViewSet)
-# router.register('auth', userservice_apis.Auth.as_view(), basename='auth')
-
 urlpatterns = [
 	path('', include('apps.webservice.urls')),
-	path('api/', include(router.urls)),
-	path('api/auth/', include('apps.userservice.urls')),
-	path('api/files/', include('apps.fileservice.urls')),
+	path('api/user/', include('apps.userservice.urls')),
+	path('api/file/', include('apps.fileservice.urls')),
 	path('admin/', admin.site.urls),
 ]

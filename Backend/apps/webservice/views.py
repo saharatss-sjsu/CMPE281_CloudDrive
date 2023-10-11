@@ -1,4 +1,4 @@
 from django.shortcuts import render
 
-def home(request):
-	return render(request, 'home.html')
+def upload_test(request):
+	return render(request, 'upload_test.html')

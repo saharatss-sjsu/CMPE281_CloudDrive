@@ -7,46 +7,71 @@ import PageHome from './pages/home';
 import PageUserBase from './pages/user/PageUserBase';
 import PageUserLogin from './pages/user/PageUserLogin';
 import PageUserLogout from './pages/user/PageUserLogout';
-
+import PageUserRegister from './pages/user/PageUserRegister';
+import PageUserAccount from './pages/user/PageUserAccount';
 
 export default function App() {
 	const [cookies, setCookie, removeCookie] = useCookies(["sessionid"]);
 	const [sessionID, setSessionID] = useState(null);
-	const session = {sessionID:sessionID, setSessionID:setSessionID, removeSessionID:()=>{ localStorage.removeItem("sessionid"); }};
+	const [user, setUser] = useState(null);
 
-	useEffect(() => {
-		return ()=>{
-			const _sessionID = localStorage.getItem("sessionid");
-			setSessionID(_sessionID);
-			console.log('load sessionID', _sessionID, cookies.sessionid);
-		}
-	});
-
-	useEffect(() => {
-		if(sessionID == null){ 
-			return;
-		}
-		if(sessionID === ""){ 
-			localStorage.removeItem("sessionid");
-			removeCookie('sessionid')
+	let api = {};
+	api.host_backend = 'http://localhost:8000';
+	api.host_cloudfront = 'https://d2r279wybcc8qg.cloudfront.net';
+	api.session = {
+		'id':sessionID, 
+		'setSession':(newSessionID)=>{
+			setSessionID(newSessionID);
+			setCookie('sessionid', newSessionID, {sameSite: 'lax', path: '/'});
+			localStorage.setItem("sessionid", newSessionID);
+		}, 
+		'clearSession':()=>{
 			setSessionID(null);
-			return;
+			localStorage.removeItem("sessionid");
+			removeCookie('sessionid');
 		}
-		console.log('set sessionID', sessionID);
-		setCookie('sessionid', sessionID, {sameSite: 'lax', path: '/'});
-		localStorage.setItem("sessionid", sessionID);
-	}, [session.sessionID])
+	}
+	api.request = (url, method='GET', data=null)=>{
+		return fetch(`${api.host_backend}${url}`,{
+			'method':method,
+			'mode': 'cors',
+			'credentials': 'include',
+			'headers': {
+				'Access-Control-Allow-Origin': 'http://localhost:3000',
+				'Cookie': `sessionid=${api.session.id}`,
+			},
+			'body': data!= null ? JSON.stringify(data):null,
+		})
+	}
+	api.user = {
+		'user':user,
+		'setUser':setUser,
+		'fetch':()=>{
+			api.request('/api/user/me/get')
+			.then(response=>response.status===200?response.json():null)
+			.then(data=>{
+				if(data == null) return;
+				setUser(data.user);
+			})
+		}
+	}
 
+	useEffect(() => {
+		document.title = 'Saharat CloudDrive';
+		setSessionID(localStorage.getItem("sessionid"));
+	}, []);
 
 	return (
 		<>
 			<BrowserRouter>
 				<Routes>
 					<Route path="/">
-						<Route index element={<PageHome session={session} />} />
+						<Route index element={<PageHome api={api} />} />
 						<Route path="account" element={<PageUserBase />}>
-							<Route path="login" element={<PageUserLogin session={session} />} />
-							<Route path="logout" element={<PageUserLogout session={session} />} />
+							<Route path="login" element={<PageUserLogin api={api} />} />
+							<Route path="logout" element={<PageUserLogout api={api} />} />
+							<Route path="register" element={<PageUserRegister api={api} />} />
+							<Route path="me" element={<PageUserAccount api={api} />} />
 						</Route>
 						<Route path="*" element={<PageError />} />
 					</Route>

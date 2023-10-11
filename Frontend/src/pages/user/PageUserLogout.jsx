@@ -2,28 +2,18 @@ import { Card } from 'react-bootstrap';
 import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 
-import BACKEND_HOST from '../../index';
-
-export default function PageUserLogout({ session }) {
+export default function PageUserLogout({ api }) {
 	const navigate = useNavigate();
 
 	function logout(){
 		console.log('logging out');
 		try{
-			fetch(`${BACKEND_HOST}/api/auth/logout/`,{
-				'method':'GET',
-				'mode': 'cors',
-				'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-				'credentials': 'include',
-				'headers': {
-					'Access-Control-Allow-Origin': 'http://localhost:3000',
-					'Cookie': `sessionid=${session.sessionID}`,
-				}
-			}).then(response => response.json())
+			api.request('/api/user/logout/')
+			.then(response => response.json())
 			.then(data => {
 				console.log('logout successful', data.success);
 				if(data.success){
-					session.setSessionID("");
+					api.session.clearSession();
 					navigate("/account/login");
 				}
 			})
@@ -33,11 +23,6 @@ export default function PageUserLogout({ session }) {
 	useEffect(() => {
 		logout();
 	});
-
-	// useEffect(() => {
-	// 	console.log('sessionID', session.sessionID);
-	// 	if(session.sessionID == "") navigate("/account/login");
-	// }, [session.sessionID])
 
 	return (
 		<>

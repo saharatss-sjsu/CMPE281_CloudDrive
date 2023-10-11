@@ -18,21 +18,12 @@ from rest_framework.decorators import api_view, action
 
 import json
 
-# Get users
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-	class Meta:
-		model = User
-		fields = ['url', 'username', 'first_name', 'last_name']
-
-class UserViewSet(viewsets.ModelViewSet):
-	http_method_names = ["get"]
-	queryset = User.objects.all()
-	serializer_class = UserSerializer
-
-
-
-# Authentication
+def user_serialize(user):
+	return {
+			"username": user.username,
+			"first_name": user.first_name,
+			"last_name": user.last_name,
+		}
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -41,23 +32,76 @@ def auth_login(request):
 	username = data.get('username')
 	password = data.get('password')
 	user = authenticate(request, username=username, password=password)
-	if user is not None:
-		login(request, user)
-		return JsonResponse({
-			"success":True,
-			"sessionid": request.session.session_key
-		})
-	return JsonResponse({"success":False, "msg":"Invalid username or password"}, status=401)
+	if user is None: return JsonResponse({"success":False, "msg":"Invalid username or password"}, status=401)
+	login(request, user)
+	return JsonResponse({
+		"success":True,
+		"sessionid": request.session.session_key,
+		"user": user_serialize(user)
+	})
 
 @csrf_exempt
 @require_http_methods(['GET','POST','OPTIONS'])
 def auth_logout(request):
-	if request.user.is_authenticated:
-		logout(request)
-		return JsonResponse({"success":True})
-	return JsonResponse({"success":False, "msg":"User not found"}, status=403)
+	if not request.user.is_authenticated: return JsonResponse({"success":False, "msg":"User not found"}, status=401)
+	logout(request)
+	return JsonResponse({"success":True})
+	
 
-# @login_required
-def auth_test(request):
-	print(request.user)
-	return HttpResponse('ok')
+@csrf_exempt
+@require_http_methods(['POST'])
+def auth_register(request):
+	data = json.loads(request.body)
+	first_name = data.get('first_name','')
+	last_name  = data.get('last_name','')
+	username = data.get('username','')
+	password = data.get('password','')
+	if len(username) == 0: return JsonResponse({"success":False, "msg":"The username cannot be empty"}, status=403)
+	if len(password) <= 1: return JsonResponse({"success":False, "msg":"The password cannot be empty"}, status=403)
+	if User.objects.filter(username=username).count() != 0: return JsonResponse({"success":False, "msg":"The username already exists"}, status=403)
+	user = User.objects.create_user(
+		username=username,
+		first_name=first_name,
+		last_name=last_name)
+	user.set_password(password)
+	user.save()
+	login(request, user)
+	return JsonResponse({
+		"success":True,
+		"sessionid": request.session.session_key,
+		"user": user_serialize(user)
+	})
+
+@csrf_exempt
+@require_http_methods(['GET','POST'])
+def user_me_get(request):
+	if not request.user.is_authenticated: return JsonResponse({"success":False}, status=401)
+	return JsonResponse({"success":True, "user":user_serialize(request.user)})
+
+@csrf_exempt
+@require_http_methods(['GET','POST'])
+def user_me_edit(request):
+	if not request.user.is_authenticated: return JsonResponse({"success":False}, status=404)
+	data = json.loads(request.body)
+	user = request.user
+	user.first_name = data.get('first_name')
+	user.last_name = data.get('last_name')
+	username = data.get('username')
+	if username != user.username:
+		if User.objects.filter(username=username).count() != 0: return JsonResponse({"success":False, "msg":"The username has already been taken"}, status=403)
+		user.username = username
+	user.save()
+	return JsonResponse({"success":True, "user":user_serialize(request.user)})
+
+@csrf_exempt
+@require_http_methods(['GET','POST'])
+def user_me_changepassword(request):
+	if not request.user.is_authenticated: return JsonResponse({"success":False}, status=404)
+	data = json.loads(request.body)
+	password = data.get('password','')
+	if len(password) <= 1: return JsonResponse({"success":False, "msg":"The password cannot be empty"}, status=403)
+	user = request.user
+	user.set_password(password)
+	user.save()
+	return JsonResponse({"success":True, "user":user_serialize(request.user)})
+	

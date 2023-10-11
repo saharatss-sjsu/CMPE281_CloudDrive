@@ -5,8 +5,12 @@ from . import apis
 urlpatterns = [
 	path("upload/",
 		include([
-			path("start/", apis.FileDirectUploadStartApi, name="start"),
-			path("finish/", apis.FileDirectUploadFinishApi, name="finish"),
+			path("start/", apis.FileDirectUploadStart),
+			path("finish/", apis.FileDirectUploadFinish),
 		]),
 	),
+	path("getlist/", apis.FileGetList),
+	path("get/", apis.FileGet),
+	path("edit/", apis.FileEdit),
+	path("delete/", apis.FileDelete),
 ]
