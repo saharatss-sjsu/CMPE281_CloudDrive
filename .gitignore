@@ -1,5 +1,1 @@
 .DS_Store
-Lambda/package/**
-Lambda/lambda_function.zip
-!Lambda/package/*.py
-!Lambda/package/*.sh

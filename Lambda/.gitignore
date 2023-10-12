@@ -1,0 +1,4 @@
+package/**
+lambda_function.zip
+!package/*.py
+!package/*.sh
