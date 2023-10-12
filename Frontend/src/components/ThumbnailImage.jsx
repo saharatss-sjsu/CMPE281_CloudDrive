@@ -17,10 +17,19 @@ const ThumbnailBase = styled('div')({
 	display: 'flex',
 	justifyContent: 'center',
 	alignItems: 'center',
-	borderRadius: '6px',
-	border: 'solid 1px #ccc',
 	padding: '4px',
+	position: 'relative',
+	border: 'solid 1px #ccc',
+	borderRadius: '6px',
 });
+
+const IconBG = styled('div')({
+	position: 'absolute',
+	backgroundColor: 'rgba(255,255,255,0.7)',
+	width: '100%',
+	height: '100%',
+	borderRadius: '6px',
+})
 
 export default function ThumbnailImage(props){
 	const file = props.file??{};
@@ -52,14 +61,16 @@ export default function ThumbnailImage(props){
 		})
 		return (
 			<ThumbnailBase onMouseEnter={()=>{setHovering(true)}} onMouseLeave={()=>{setHovering(false)}} style={{ cursor:hovering?'pointer':'auto' }} onClick={()=>{download()}}>
-				{hovering?
-					<Icon.Download fontSize='medium' className='text-primary' />
-					:(imageSrc==null?
-						<Spinner size='sm' />
-						:
-						<Image style={{ objectFit:'cover', width:'100%', height:'100%', borderRadius:'3px' }} src={imageSrc} />
-					)
+				{imageSrc==null?
+					<Spinner size='sm' />
+					:
+					<Image style={{ objectFit:'cover', width:'100%', height:'100%', borderRadius:'3px' }} src={imageSrc} />
 				}
+				{hovering?(<>
+					<IconBG />
+					<Icon.Download fontSize='medium' className='text-primary' style={{ position:'absolute' }} />
+				</>):<></>}
+
 			</ThumbnailBase>
 		);
 	}
