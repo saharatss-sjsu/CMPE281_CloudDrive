@@ -17,9 +17,13 @@ class File(models.Model):
 	updated  = models.DateTimeField(auto_now=True)
 	uploaded = models.DateTimeField(blank=True, null=True)
 
-	def delete(self, using=None, keep_parents=False):
+	def deleteFile(self):
 		s3_object_delete(file_path=self.path)
-		if self.type == 'image/jpeg' or self.type == 'image/png': s3_object_delete(file_path=f't_{self.path}')
+		if self.type == 'image/jpeg' or self.type == 'image/png':
+			s3_object_delete(file_path=f't_{self.path}')
+
+	def delete(self, using=None, keep_parents=False):
+		self.deleteFile()
 		super().delete()
 
 	def dict(self):

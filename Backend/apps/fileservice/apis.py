@@ -14,14 +14,14 @@ import uuid
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def FileDirectUploadStart(request, *args, **kwargs):
+def FileDirectUploadStart(request):
 	if not request.user.is_authenticated: return HttpResponse(status=401)
 	try: data = json.loads(request.body)
 	except: return HttpResponse(status=400)
 	file_name = data.get('name')
 	file_type = data.get('type')
 	file_size = data.get('size')
-	if file_size > settings.UPLOAD_MAX_FILE_SIZE: return HttpResponse(status=406)
+	if file_size > settings.UPLOAD_MAX_FILE_SIZE: return HttpResponse(f"{file_name} is too large", status=406)
 	service = FileDirectUploadService(request.user)
 	presigned_data = service.start(file_name, file_type, file_size)
 	return JsonResponse(data=presigned_data)
@@ -39,6 +39,27 @@ def FileDirectUploadFinish(request):
 	service = FileDirectUploadService(request.user)
 	service.finish(file=file)
 	return JsonResponse({"file": file.dict()})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def FileReplaceUploadStart(request):
+	if not request.user.is_authenticated: return HttpResponse(status=401)
+	try:
+		data = json.loads(request.body)
+		file_id = uuid.UUID(data.get('id'))
+		file_name = data.get('name')
+		file_type = data.get('type')
+		file_size = data.get('size')
+	except: return HttpResponse(status=400)
+	file = get_object_or_404(File, id=file_id)
+	if file_type != file.type: return HttpResponse("File type must be the same", status=406)
+	if file_size > settings.UPLOAD_MAX_FILE_SIZE: return HttpResponse(f"{file.name} is too large", status=406)
+	file.deleteFile()
+	file.size = file_size
+	file.save()
+	service = FileDirectUploadService(request.user)
+	presigned_data = service.replace(file)
+	return JsonResponse(data=presigned_data)
 
 def FileGetList(request):
 	if not request.user.is_authenticated: return HttpResponse(status=401)

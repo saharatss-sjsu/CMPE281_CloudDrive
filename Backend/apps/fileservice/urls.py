@@ -7,6 +7,7 @@ urlpatterns = [
 		include([
 			path("start/", apis.FileDirectUploadStart),
 			path("finish/", apis.FileDirectUploadFinish),
+			path("replace/", apis.FileReplaceUploadStart),
 		]),
 	),
 	path("getlist/", apis.FileGetList),

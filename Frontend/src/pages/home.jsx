@@ -8,6 +8,7 @@ import {
 	Card,
 	Form,
 	Button,
+	ListGroup,
 } from 'react-bootstrap';
 import {
 	styled,
@@ -40,9 +41,11 @@ export default function PageHome({ api }) {
 	}
 
 	const [filesList, setFilesList] = useState([]);
-	const [textUpload, setTextUpload] = useState("Max file size 10MB.");
 
-	const fileInput = useRef(null);
+	const fileInputUpload  = useRef(null);
+	const fileInputReplace = useRef(null);
+	const [textUpload, setTextUpload] = useState("Max file size 10MB.");
+	const [textUploadReplace, setTextUploadReplace] = useState("");
 	const [editingFile, setEditingFile] = useState(null);
 
 	const convertDatetimeToString = (input)=>(new Date(input)).toLocaleString('US');
@@ -74,24 +77,30 @@ export default function PageHome({ api }) {
 	}
 	
 	function fileUploadStart(file){
+		let response_code = null;
 		api.request('/api/file/upload/start/', 'POST', {
 			name: file.name,
 			type: file.type,
 			size: file.size
 		})
 		.then(response => {
+			response_code = response.status;
 			if(response.status === 200) return response.json();
-			else if(response.status === 406) setTextUpload(`${file.name} is too large.`)
+			else return response.text();
 		})
 		.then(data => {
 			if(data == null) return;
+			if(typeof data === 'string'){
+				setTextUpload(data);
+				return;
+			}
 			setTextUpload(`${file.name} is uploading...`)
-			setFilesList([...filesList, data.file]);
 			fileUploadDo(data, file).then(response => {
 				if(response.status === 204){
 					setTextUpload(`${file.name} uploaded successfully.`);
 					pushAlert('success', `${file.name} uploaded successfully.`);
 					fileUploadFinish(data.file.id);
+					setFilesList([...filesList, data.file]);
 				}
 			})
 		})
@@ -114,6 +123,40 @@ export default function PageHome({ api }) {
 		})
 		.then(response => {
 			if(response.status !== 200) pushAlert('error', response.statusText);
+		})
+	}
+	function fileUploadReplace(file, fileObj){
+		let response_code = null;
+		api.request('/api/file/upload/replace/', 'POST', {
+			id: fileObj.id,
+			name: file.name,
+			type: file.type,
+			size: file.size
+		})
+		.then(response => {
+			response_code = response.status;
+			if(response.status === 200) return response.json();
+			else return response.text();
+		})
+		.then(data => {
+			if(data == null) return;
+			if(typeof data === 'string'){
+				setTextUploadReplace(data);
+				return;
+			}
+			setTextUploadReplace(`${file.name} is uploading...`)
+			fileUploadDo(data, file).then(response => {
+				if(response.status === 204){
+					pushAlert('success', `${fileObj.name} replacement uploaded successfully.`);
+					fileUploadFinish(data.file.id);
+					setTextUploadReplace("")
+					closeFileEditor();
+					setFilesList(filesList.map(x => {
+						if(x.id === data.file.id) return {...data.file};
+						return x;
+					}));
+				}
+			})
 		})
 	}
 
@@ -148,6 +191,9 @@ export default function PageHome({ api }) {
 			}));
 		})
 	}
+	function closeFileEditor(){
+		setEditingFile(null); 
+	}
 
 	useEffect(()=>{
 		if(api.session.id == null){
@@ -164,6 +210,8 @@ export default function PageHome({ api }) {
 		<div className="App">
 			<MainNavbar user={api.user.user}></MainNavbar>
 			<Container className='mt-4 mb-4' fluid='md'>
+
+				{/* Alert */}
 				<div className='mb-3'>
 					{alerts.map((alert, index)=>
 						<Alert severity={alert.severity} className='mb-2' key={index} action={
@@ -183,20 +231,23 @@ export default function PageHome({ api }) {
 					)}
 				</div>
 
+				{/* Upload */}
 				<Card variant="outlined" className="mb-3">
 					<Card.Body>
 						<Stack direction="row" spacing={2} alignItems={'center'}>
-							<Button onClick={()=>{ fileInput.current.click(); }}>
+							<Button onClick={()=>{ fileInputUpload.current.click(); }}>
 								<Stack direction="row" spacing={1} alignItems={'center'}>
 									<Icon.CloudUpload />
 									<div>Upload</div>
 								</Stack>
-								<input style={{display:'none'}} type="file" onChange={(event)=>{ fileUploadStart(event.target.files[0]); event.target.value = null; }} ref={fileInput} />
+								<input style={{display:'none'}} type="file" onChange={(event)=>{ fileUploadStart(event.target.files[0]); event.target.value = null; }} ref={fileInputUpload} />
 							</Button>
 							<div>{textUpload}</div>
 						</Stack>
 					</Card.Body>
 				</Card>
+
+				{/* Main Table */}
 				<Card variant="outlined" className="mb-3">
 					<TableContainer>
 						<Table size="small" aria-label="dense table">
@@ -246,30 +297,52 @@ export default function PageHome({ api }) {
 							</TableBody>
 						</Table>
 					</TableContainer>
-
 				</Card>
-
 			</Container>
 
-			<Dialog open={editingFile!=null} onClose={()=>{ setEditingFile(null); }}>
-				<Card style={{ width: '18rem' }}>
-					<Card.Body>
-						<Card.Title>File editing</Card.Title>
-						<Form onSubmit={(event)=>{ event.preventDefault(); editFile(editingFile); setEditingFile(null); }}>
-							<Form.Group className="mb-3" controlId="name">
-								<Form.Label>File name {editingFile?.name}</Form.Label>
-								<Form.Control type="text" name="name" value={editingFile?.name || ''} onChange={(event)=>{ setEditingFile({...editingFile, [event.target.name]:event.target.value}); }} />
-							</Form.Group>
-							<Form.Group className="mb-3" controlId="note">
-								<Form.Label>Description</Form.Label>
-								<Form.Control as="textarea" name='note' rows={3} value={editingFile?.note || ''} onChange={(event)=>{ setEditingFile({...editingFile, [event.target.name]:event.target.value}); }} />
-							</Form.Group>
-							<Stack direction="row" spacing={1} alignItems={'center'}>
-								<Button variant="outline-secondary" onClick={()=>{ setEditingFile(null); }}>Cancel</Button>
-								<Button variant="primary" type='submit'>Save</Button>
+			{/* File settings */}
+			<Dialog open={editingFile!=null} onClose={()=>{ closeFileEditor(); }} >
+				<Card style={{ width: '20rem', borderRadius: '0' }}>
+					<ListGroup variant="flush" className='pt-2'>
+						<ListGroup.Item className='pb-3'>
+							<Card.Title>File Editing</Card.Title>
+							<Card.Text>
+								You can edit the file by downloading the file, then making changes on your device, and uploading the file back.
+							</Card.Text>
+							<Stack direction="row" spacing={2} alignItems={'center'}>
+								<Button variant='outline-primary' href={`${api.host_cloudfront}/${editingFile?.path}`} download={`${editingFile?.name}`} target='_blank' className='w-100'>
+									<Stack direction="row" spacing={1} alignItems={'center'}>
+										<Icon.CloudDownload />
+										<div>Download</div>
+									</Stack>
+								</Button>
+								<Button variant='outline-primary' onClick={()=>{ fileInputReplace.current.click(); }} className='w-100'>
+									<Stack direction="row" spacing={1} alignItems={'center'}>
+										<Icon.CloudUpload />
+										<div>Upload</div>
+									</Stack>
+									<input style={{display:'none'}} type="file" onChange={(event)=>{ fileUploadReplace(event.target.files[0], editingFile); event.target.value = null; }} ref={fileInputReplace} />
+								</Button>
 							</Stack>
-						</Form>
-					</Card.Body>
+							{textUploadReplace?<Card.Text className='text-danger mt-3'>{textUploadReplace}</Card.Text>:<></>}
+						</ListGroup.Item>
+						<ListGroup.Item className='pb-3'>
+							<Form onSubmit={(event)=>{ event.preventDefault(); editFile(editingFile); closeFileEditor(); }}>
+								<Form.Group className="mb-3" controlId="name">
+									<Form.Label>File name</Form.Label>
+									<Form.Control type="text" name="name" value={editingFile?.name || ''} onChange={(event)=>{ setEditingFile({...editingFile, [event.target.name]:event.target.value}); }} />
+								</Form.Group>
+								<Form.Group className="mb-3" controlId="note">
+									<Form.Label>Description</Form.Label>
+									<Form.Control as="textarea" name='note' rows={3} value={editingFile?.note || ''} onChange={(event)=>{ setEditingFile({...editingFile, [event.target.name]:event.target.value}); }} />
+								</Form.Group>
+								<Stack direction="row" spacing={1} alignItems={'center'}>
+									<Button variant="outline-secondary" onClick={()=>{ closeFileEditor(); }}>Cancel</Button>
+									<Button variant="primary" type='submit'>Save</Button>
+								</Stack>
+							</Form>
+						</ListGroup.Item>
+					</ListGroup>
 				</Card>
 			</Dialog>
 

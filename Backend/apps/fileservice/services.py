@@ -34,6 +34,14 @@ class FileDirectUploadService:
 		return {"file": file.dict(), **presigned_data}
 	
 	@transaction.atomic
+	def replace(self, file:File) -> Dict[str, Any]:
+		file.path = file_generate_upload_path(file.name)
+		file.save()
+		presigned_data: Dict[str, Any] = {}
+		presigned_data = s3_generate_presigned_post(file_path=file.path, file_type=file.type)
+		return {"file": file.dict(), **presigned_data}
+	
+	@transaction.atomic
 	def finish(self, *, file: File) -> File:
 		file.uploaded = timezone.now()
 		file.full_clean()
