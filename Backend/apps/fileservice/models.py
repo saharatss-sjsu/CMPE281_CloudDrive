@@ -4,6 +4,11 @@ import uuid
 
 from .connector import s3_object_delete
 
+class FileModelQuerySet(models.query.QuerySet):
+	def delete(self):
+		for obj in self.all():
+			obj.delete()
+
 class File(models.Model):
 	id   = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
@@ -16,6 +21,8 @@ class File(models.Model):
 	created  = models.DateTimeField(auto_now_add=True)
 	updated  = models.DateTimeField(auto_now=True)
 	uploaded = models.DateTimeField(blank=True, null=True)
+
+	objects = FileModelQuerySet.as_manager()
 
 	def deleteFile(self):
 		s3_object_delete(file_path=self.path)
