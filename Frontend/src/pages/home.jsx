@@ -10,6 +10,7 @@ import {
 	Button,
 } from 'react-bootstrap';
 import {
+	styled,
 	TableContainer,
 	Table,
 	TableHead,
@@ -25,6 +26,7 @@ import {
 import * as Icon from '@mui/icons-material';
 
 import MainNavbar from '../components/MainNavbar';
+import ThumbnailImage from '../components/ThumbnailImage';
 
 export default function PageHome({ api }) {
 	const navigate = useNavigate();
@@ -200,6 +202,7 @@ export default function PageHome({ api }) {
 						<Table size="small" aria-label="dense table">
 							<TableHead>
 								<TableRow>
+									<TableCell className='fw-bold'>Preview</TableCell>
 									<TableCell className='fw-bold'>Name</TableCell>
 									<TableCell className='fw-bold'>Type</TableCell>
 									<TableCell className='fw-bold'>Size</TableCell>
@@ -217,14 +220,8 @@ export default function PageHome({ api }) {
 								</TableRow>):<></>}
 								{filesList.map((file, file_index) => (
 									<TableRow key={file_index} >
-										<TableCell component="th" scope="row">
-											<MUIButton style={{textTransform:'none'}} href={`${api.host_cloudfront}/${file.path}`} target='_blank'>
-												<Stack direction="row" spacing={1} alignItems={'center'}>
-													<Icon.OpenInNew fontSize="inherit" />
-													<div>{file.name}</div>
-												</Stack>
-											</MUIButton>
-										</TableCell>
+										<TableCell><ThumbnailImage file={file} api={api} /></TableCell>
+										<TableCell component="th" scope="row" className='text-nowrap'>{file.name?.length>20?`${file.name?.slice(0, 20)}...`:file.name }</TableCell>
 										<TableCell>{file.type}</TableCell>
 										<TableCell className='text-nowrap'>{convertBytesToString(file.size)}</TableCell>
 										<TableCell className='text-nowrap'>{`${file.owner.first_name} (${file.owner.username})`}</TableCell>
@@ -233,7 +230,7 @@ export default function PageHome({ api }) {
 										<TableCell>{file.note?.length>20?`${file.note?.slice(0, 20)}...`:(file.note?file.note:'-') }</TableCell>
 										<TableCell>
 											<Stack direction="row" alignItems="center" spacing={1}>
-												<IconButton color='primary' aria-label="download" size="small" href={`${api.host_cloudfront}/${file.path}`} download='file' >
+												<IconButton color='primary' aria-label="download" size="small" href={`${api.host_cloudfront}/${file.path}`} download={`${file.name}`} target='_blank' >
 													<Icon.Download fontSize="inherit" />
 												</IconButton>
 												<IconButton color='primary' aria-label="rename" size="small"  onClick={()=>{ setEditingFile(file); }}>

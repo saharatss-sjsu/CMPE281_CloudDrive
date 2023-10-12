@@ -19,6 +19,7 @@ class File(models.Model):
 
 	def delete(self, using=None, keep_parents=False):
 		s3_object_delete(file_path=self.path)
+		if self.type == 'image/jpeg' or self.type == 'image/png': s3_object_delete(file_path=f't_{self.path}')
 		super().delete()
 
 	def dict(self):
