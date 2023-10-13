@@ -1,5 +1,11 @@
 .DS_Store
-db.sqlite3
-dev.env
-*.pyc
+
 migrations/
+credentials/
+static/admin/
+
+db.sqlite3
+*.pyc
+
+*.env
+!example.env

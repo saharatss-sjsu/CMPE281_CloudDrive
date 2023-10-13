@@ -1,0 +1,14 @@
+# Django
+Django==3.2.9
+django-cors-headers==4.2.0
+djangorestframework==3.14.0
+
+# MySQL
+# Prerequires:
+# sudo apt install python3-dev default-libmysqlclient-dev build-essential
+# sudo apt install mysql-client-core-8.0
+# sudo apt install pkg-config
+mysqlclient>=2.0.0
+
+# AWS
+boto3==1.28.62

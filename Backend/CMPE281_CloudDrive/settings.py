@@ -13,13 +13,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 
 import os
-import environ
-env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-environ.Env.read_env(os.path.join(BASE_DIR, 'dev.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -28,9 +24,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, 'dev.env'))
 SECRET_KEY = 'django-insecure-0$mx##%y1=$n-x(5g$1&wu)@+yl7#ep_l+1h5x$_az$hnhgq%+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = os.environ.get('DEBUG', 'False') is 'True'
 
-ALLOWED_HOSTS = []
+print(f'DEBUG={DEBUG}')
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -41,7 +39,6 @@ INSTALLED_APPS = [
 	'apps.userservice',
 
 	'corsheaders',
-	'rest_framework',
 
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -87,13 +84,21 @@ WSGI_APPLICATION = 'CMPE281_CloudDrive.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+# 	'default': {
+# 		'ENGINE': 'django.db.backends.sqlite3',
+# 		'NAME': BASE_DIR / 'db.sqlite3',
+# 	}
+# }
+
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': BASE_DIR / 'db.sqlite3',
+	"default": {
+		"ENGINE": "django.db.backends.mysql",
+		"OPTIONS": {
+			"read_default_file": os.path.join(BASE_DIR, 'credentials/mysql.cnf'),
+		},
 	}
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -131,7 +136,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+if DEBUG == True:
+	STATIC_URL = '/static/'
+else:
+	STATIC_URL = 'https://d2r279wybcc8qg.cloudfront.net/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -170,11 +179,11 @@ REST_FRAMEWORK = {
 
 UPLOAD_MAX_FILE_SIZE = 10*10**6 # 10MB
 
-AWS_S3_ACCESS_KEY_ID     = env("AWS_S3_ACCESS_KEY_ID")
-AWS_S3_SECRET_ACCESS_KEY = env("AWS_S3_SECRET_ACCESS_KEY")
-AWS_S3_BUCKET_NAME       = env("AWS_S3_BUCKET_NAME")
-AWS_S3_REGION_NAME       = env("AWS_S3_REGION_NAME")
-AWS_S3_SIGNATURE_VERSION = env("AWS_S3_SIGNATURE_VERSION", default="s3v4")
+AWS_S3_ACCESS_KEY_ID     = os.environ["AWS_S3_ACCESS_KEY_ID"]
+AWS_S3_SECRET_ACCESS_KEY = os.environ["AWS_S3_SECRET_ACCESS_KEY"]
+AWS_S3_BUCKET_NAME       = os.environ["AWS_S3_BUCKET_NAME"]
+AWS_S3_REGION_NAME       = os.environ["AWS_S3_REGION_NAME"]
+AWS_S3_SIGNATURE_VERSION = os.environ["AWS_S3_SIGNATURE_VERSION"]
 
-AWS_DEFAULT_ACL          = env("AWS_DEFAULT_ACL", default="private")
-AWS_PRESIGNED_EXPIRY     = env.int("AWS_PRESIGNED_EXPIRY", default=10)  # seconds
+AWS_DEFAULT_ACL          = os.environ.get("AWS_DEFAULT_ACL", default="private")
+AWS_PRESIGNED_EXPIRY     = int(os.environ.get("AWS_PRESIGNED_EXPIRY", default=10))  # seconds

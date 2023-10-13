@@ -1,0 +1,14 @@
+[Unit]
+Description=CMPE281-CloudDrive-Backend
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=bash /home/ubuntu/Backend/run.sh
+
+[Install]
+WantedBy=multi-user.target

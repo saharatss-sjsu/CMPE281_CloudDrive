@@ -16,7 +16,7 @@ export default function App() {
 	const [user, setUser] = useState(null);
 
 	let api = {};
-	api.host_backend = 'http://localhost:8000';
+	api.host_backend = `${window.location.protocol}//${window.location.host}`;
 	api.host_cloudfront = 'https://d2r279wybcc8qg.cloudfront.net';
 	api.session = {
 		'id':sessionID, 
@@ -37,7 +37,7 @@ export default function App() {
 			'mode': 'cors',
 			'credentials': 'include',
 			'headers': {
-				'Access-Control-Allow-Origin': 'http://localhost:3000',
+				'Access-Control-Allow-Origin': `${window.location.protocol}//${window.location.host}`,
 				'Cookie': `sessionid=${api.session.id}`,
 			},
 			'body': data!= null ? JSON.stringify(data):null,
