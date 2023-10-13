@@ -42,7 +42,8 @@ export default function ThumbnailImage(props){
 	}
 
 	if(file.type === 'image/jpeg' || file.type === 'image/png'){
-		const thumbnailURL = `${api.host_cloudfront}/t_${file.path}`;
+		const filePathSplited = file.path.split('/');
+		const thumbnailURL = `${api.host_cloudfront}/${filePathSplited[0]}_t/${filePathSplited[1]}`;
 		fetch(thumbnailURL,{
 			mode:'cors',
 			headers: {

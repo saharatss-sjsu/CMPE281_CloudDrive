@@ -13,7 +13,7 @@ import uuid
 
 def file_generate_upload_path(file_name):
 	extension = pathlib.Path(file_name).suffix
-	return f"files/{uuid.uuid4().hex}{extension}"
+	return f"user_upload/{uuid.uuid4().hex}{extension}"
 
 class FileDirectUploadService:
 	def __init__(self, user: User):

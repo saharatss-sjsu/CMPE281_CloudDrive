@@ -26,6 +26,6 @@ def lambda_handler(event, context):
 
 		s3_client.download_file(bucket, key, download_path)
 		resize_image(download_path, upload_path)
-		s3_client.upload_file(upload_path, bucket, f't_files/{file_name}')
+		s3_client.upload_file(upload_path, bucket, f'user_upload_t/{file_name}')
 
 

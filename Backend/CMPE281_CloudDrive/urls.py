@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+admin.site.site_header = 'Saharat CloudDrive - Administration'
+
 urlpatterns = [
 	path('', include('apps.webservice.urls')),
 	path('api/user/', include('apps.userservice.urls')),
