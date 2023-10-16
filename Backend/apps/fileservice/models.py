@@ -27,7 +27,7 @@ class File(models.Model):
 	def deleteFile(self):
 		s3_object_delete(file_path=self.path)
 		if self.type == 'image/jpeg' or self.type == 'image/png':
-			s3_object_delete(file_path=f't_{self.path}')
+			s3_object_delete(file_path=f'user_upload_t/{self.path.split("/")[-1]}')
 
 	def delete(self, using=None, keep_parents=False):
 		self.deleteFile()

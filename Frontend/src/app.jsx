@@ -17,7 +17,7 @@ export default function App() {
 
 	let api = {};
 	api.host_backend = `${window.location.protocol}//${window.location.host}`;
-	api.host_cloudfront = 'https://d2r279wybcc8qg.cloudfront.net';
+	api.host_cloudfront = 'https://drive-media.saharatss.org';
 	api.session = {
 		'id':sessionID, 
 		'setSession':(newSessionID)=>{
