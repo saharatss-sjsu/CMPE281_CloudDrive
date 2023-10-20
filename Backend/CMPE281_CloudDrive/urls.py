@@ -20,6 +20,7 @@ admin.site.site_header = 'Saharat CloudDrive - Administration'
 
 urlpatterns = [
 	path('', include('apps.webservice.urls')),
+	path('api/user-social/', include('allauth.urls')),
 	path('api/user/', include('apps.userservice.urls')),
 	path('api/file/', include('apps.fileservice.urls')),
 	path('admin/', admin.site.urls),

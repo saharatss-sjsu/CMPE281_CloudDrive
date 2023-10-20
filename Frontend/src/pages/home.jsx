@@ -267,7 +267,7 @@ export default function PageHome({ api }) {
 							<TableBody>
 								{filesList.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={8} style={{color:'#aaa'}} >No file</TableCell>
+									<TableCell colSpan={9} style={{color:'#aaa'}} >No file</TableCell>
 								</TableRow>):<></>}
 								{filesList.map((file, file_index) => (
 									<TableRow key={file_index} >

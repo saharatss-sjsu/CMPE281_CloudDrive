@@ -40,6 +40,11 @@ INSTALLED_APPS = [
 
 	'corsheaders',
 
+	'allauth',
+	'allauth.account',
+	'allauth.socialaccount',
+	'allauth.socialaccount.providers.google', 
+
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -50,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'corsheaders.middleware.CorsMiddleware',
+	'allauth.account.middleware.AccountMiddleware',
 
 	'django.middleware.security.SecurityMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
@@ -162,9 +168,26 @@ CORS_ALLOW_HEADERS = [
 # Auth
 
 LOGIN_URL = '/'
+LOGIN_REDIRECT_URL = '/account/login'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60*60*24 # 24hr
+
+SOCIALACCOUNT_PROVIDERS = {
+	'google': {
+		'SCOPE': [
+			'profile',
+			'email',
+		],
+		'AUTH_PARAMS': {
+			'access_type': 'online',
+		}
+	}
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+AUTHENTICATION_BACKENDS = ('allauth.account.auth_backends.AuthenticationBackend',)
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 # Rest
 

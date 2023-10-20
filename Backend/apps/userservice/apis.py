@@ -76,7 +76,11 @@ def auth_register(request):
 @require_http_methods(['GET','POST'])
 def user_me_get(request):
 	if not request.user.is_authenticated: return JsonResponse({"success":False}, status=401)
-	return JsonResponse({"success":True, "user":user_serialize(request.user)})
+	return JsonResponse({
+		"success":True,
+		"sessionid": request.session.session_key,
+		"user":user_serialize(request.user),
+	})
 
 @csrf_exempt
 @require_http_methods(['GET','POST'])
@@ -104,4 +108,3 @@ def user_me_changepassword(request):
 	user.set_password(password)
 	user.save()
 	return JsonResponse({"success":True, "user":user_serialize(request.user)})
-	
